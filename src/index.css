@@ -55,3 +55,7 @@ ol, ul {
   align-items: center;
   justify-content: center;
 }
+
+.tag {
+  border-radius: 15px;
+}

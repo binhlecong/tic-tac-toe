@@ -2,16 +2,16 @@ import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Col } from 'react-bootstrap';
-import { XCircle, CircleFill } from 'react-bootstrap-icons' 
+import { FiCircle, FiX } from 'react-icons/fi';
 
 import './index.css';
 
 function Icon(props) {
   let icon = null;
   if (props === 'O') {
-    icon = <CircleFill size={100} /> 
+    icon = <FiCircle size={100} /> 
   } else if (props === 'X') {
-    icon = <XCircle size={100} />
+    icon = <FiX size={100} />
   }
   return icon;
 }
@@ -131,10 +131,10 @@ class Game extends Component {
     return (
       <Container className="h-100 w-100" fluid="md">
         <Row>
-          <Col md={7} className="bg-primary m-1 h-100">
+          <Col md={7} className="bg-primary m-1 h-100 tag">
             <Board squares={current} player={currentPlayer} onClick={(i) => this.handleClick(i)} />
           </Col>
-          <Col md={4} className="bg-secondary m-1 h-100">
+          <Col md={4} className="bg-secondary m-1 h-100 tag">
             <h3> Traverse between moves: </h3>
             <ol>{moves}</ol>
           </Col>
