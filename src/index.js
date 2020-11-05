@@ -1,11 +1,25 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Container, Row, Col } from 'react-bootstrap';
+import { XCircle, CircleFill } from 'react-bootstrap-icons' 
+
 import './index.css';
+
+function Icon(props) {
+  let icon = null;
+  if (props === 'O') {
+    icon = <CircleFill size={100} /> 
+  } else if (props === 'X') {
+    icon = <XCircle size={100} />
+  }
+  return icon;
+}
 
 function Square(props) {
   return (
     <button className="square" onClick={props.onClick}>
-      {props.value}
+      {Icon(props.value)}
     </button>
   )
 }
@@ -20,29 +34,34 @@ class Board extends Component {
   render() {
     let status = 'Next player: ' + (this.props.player);
     const winner = calculateWinner(this.props.squares); 
-    if(winner != null) {
+    
+    if (winner != null) {
       status = winner + ' win （￣︶￣）　';
+    }
+    
+    if (isDraw(this.props.squares)) {
+      status = "It 's a draw o(*^＠^*)o";
     }
 
     return (
-      <div>
-        <div className="status">{status}</div>
-        <div className="board-row">
+      <Container className="m-3">
+        <h2 className="status">{status}</h2>
+        <Row>
           {this.renderSquare(0)}
           {this.renderSquare(1)}
           {this.renderSquare(2)}
-        </div>
-        <div className="board-row">
+        </Row>
+        <Row className="board-row">
           {this.renderSquare(3)}
           {this.renderSquare(4)}
           {this.renderSquare(5)}
-        </div>
-        <div className="board-row">
+        </Row>
+        <Row className="board-row">
           {this.renderSquare(6)}
           {this.renderSquare(7)}
           {this.renderSquare(8)}
-        </div>
-      </div>
+        </Row>
+      </Container>
     );
   }
 }
@@ -55,23 +74,15 @@ class Game extends Component {
         Array(9).fill(null)
       ],
       stepNumber: 0,
-      player: 'X'
+      isXTurn: true
     }
   }
 
   jumpTo = (step) => {
     this.setState({
       stepNumber: step,
-      player: this.changePlayer(this.state.player)
+      isXTurn: (step % 2) === 0
     })
-  }
-
-  changePlayer = (currPlayer) => {
-    if (currPlayer === 'X') {
-      return 'O'
-    } else {
-      return 'X'
-    }
   }
 
   handleClick = (index) => {
@@ -81,16 +92,16 @@ class Game extends Component {
     const current = history[history.length - 1];
     const newBoard = current.slice();
     
-    if (current[index] || calculateWinner(current)) {
+    if (current[index] || calculateWinner(current) || isDraw(current)) {
       return;
     }
-    newBoard[index] = this.state.player;
+    newBoard[index] = this.state.isXTurn ? 'X' : 'O';
     history.push(newBoard);
     
     this.setState({
       history: history,
       stepNumber: history.length - 1,
-      player: this.changePlayer(this.state.player)
+      isXTurn: !this.state.isXTurn
     }, () => {
       console.log('hnadle click', history, current, this.state.stepNumber);
     });
@@ -101,32 +112,45 @@ class Game extends Component {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
     console.log(history, this.state.stepNumber);
-    let status = 'Next player: ' + (this.state.player);
-    const winner = calculateWinner(current); 
-    if(winner != null) {
-      status = winner + ' win （￣︶￣）↗　';
-    }
+
+    const currentPlayer = this.state.isXTurn ? 'X' : 'O';
+    // let status = 'Next player: ' + currentPlayer;
+    //const winner = calculateWinner(current); 
+    // if(winner != null) {
+    //   status = winner + ' win （￣︶￣）↗　';
+    // }
 
     // show history
     const moves = history.map((step, move) => {
       const desc = move ? 'Go to move #' + move : 'Go to game start';
       return (
-        <button key={move} onClick={() => this.jumpTo(move)}>{desc}</button>
+        <button key={move} onClick={() => this.jumpTo(move)} disabled={move === this.state.stepNumber}>{desc}</button>
       );
     });
 
     return (
-      <div className="game">
-        <div className="game-board">
-          <Board squares={current} player={this.state.player} onClick={(i) => this.handleClick(i)} />
-        </div>
-        <div className="game-info">
-          <div>{status}</div>
-          <ol>{moves}</ol>
-        </div>
-      </div>
+      <Container className="h-100 w-100" fluid="md">
+        <Row>
+          <Col md={7} className="bg-primary m-1 h-100">
+            <Board squares={current} player={currentPlayer} onClick={(i) => this.handleClick(i)} />
+          </Col>
+          <Col md={4} className="bg-secondary m-1 h-100">
+            <h3> Traverse between moves: </h3>
+            <ol>{moves}</ol>
+          </Col>
+        </Row>
+      </Container>
     );
   }
+}
+
+function isDraw(squares) {
+  for (let index = 0; index < squares.length; index++) {
+    if (squares[index] === null) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function calculateWinner(squares) {
@@ -153,6 +177,6 @@ function calculateWinner(squares) {
 // ========================================
 
 ReactDOM.render(
-  <Game />,
+  <Game/>,
   document.getElementById('root')
 );
