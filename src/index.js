@@ -44,19 +44,19 @@ class Board extends Component {
     }
 
     return (
-      <Container className="m-3">
-        <h2 className="status">{status}</h2>
-        <Row>
+      <Container className="m-5">
+        <h2 className="status m-0">{status}</h2>
+        <Row className="m-0">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
           {this.renderSquare(2)}
         </Row>
-        <Row className="board-row">
+        <Row className="m-0">
           {this.renderSquare(3)}
           {this.renderSquare(4)}
           {this.renderSquare(5)}
         </Row>
-        <Row className="board-row">
+        <Row className="m-0">
           {this.renderSquare(6)}
           {this.renderSquare(7)}
           {this.renderSquare(8)}
@@ -122,19 +122,19 @@ class Game extends Component {
 
     // show history
     const moves = history.map((step, move) => {
-      const desc = move ? 'Go to move #' + move : 'Go to game start';
+      const desc = move ? 'Go to move #' + move : 'Restart game ↺';
       return (
         <button key={move} onClick={() => this.jumpTo(move)} disabled={move === this.state.stepNumber}>{desc}</button>
       );
     });
 
     return (
-      <Container className="h-100 w-100" fluid="md">
+      <Container className="h-100 w-100 justify-content-between" fluid="sm">
         <Row>
-          <Col md={7} className="bg-primary m-1 h-100 tag">
+          <Col sm={8} className="bg-primary m-1 p-auto h-100 borRad">
             <Board squares={current} player={currentPlayer} onClick={(i) => this.handleClick(i)} />
           </Col>
-          <Col md={4} className="bg-secondary m-1 h-100 tag">
+          <Col sm={3} className="bg-secondary m-1 p-auto h-100 borRad">
             <h3> Traverse between moves: </h3>
             <ol>{moves}</ol>
           </Col>

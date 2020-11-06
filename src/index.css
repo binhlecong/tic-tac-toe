@@ -14,7 +14,7 @@ ol, ul {
 }
 
 .status {
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 .square {
@@ -56,6 +56,6 @@ ol, ul {
   justify-content: center;
 }
 
-.tag {
+.borRad {
   border-radius: 15px;
 }
