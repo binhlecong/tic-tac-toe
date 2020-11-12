@@ -37,15 +37,13 @@ class Board extends Component {
     
     if (winner != null) {
       status = winner + ' win （￣︶￣）　';
-    }
-    
-    if (isDraw(this.props.squares)) {
+    } else if (isDraw(this.props.squares)) {
       status = "It 's a draw o(*^＠^*)o";
     }
 
     return (
       <Container className="m-5">
-        <h2 className="status m-0">{status}</h2>
+        <h2 className="status m-2">{status}</h2>
         <Row className="m-0">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
