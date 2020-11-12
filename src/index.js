@@ -1,18 +1,17 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { FiCircle, FiX } from 'react-icons/fi';
 
 import './index.css';
 
 function Icon(props) {
   let icon = null;
-  if (props === 'O') {
-    icon = <FiCircle size={100} /> 
-  } else if (props === 'X') {
-    icon = <FiX size={100} />
-  }
+
+  if (props === 'O') { icon = <FiCircle size={100} /> } 
+  else if (props === 'X') { icon = <FiX size={100} /> }
+
   return icon;
 }
 
@@ -22,6 +21,17 @@ function Square(props) {
       {Icon(props.value)}
     </button>
   )
+}
+
+function PopUpMenu(props) {
+  return(
+    <Card className="blurry-bg">
+      <Card.Body className="floating borRad">
+        <Card.Title className="text-center m-2">{props.winner} has won the game</Card.Title>
+        <Button variant="danger" size="lg" className="align-content-between mx-5" onClick={props.onClick}> RESTART </Button>
+      </Card.Body>
+    </Card>
+  ); 
 }
 
 class Board extends Component {
@@ -36,14 +46,14 @@ class Board extends Component {
     const winner = calculateWinner(this.props.squares); 
     
     if (winner != null) {
-      status = winner + ' win （￣︶￣）　';
-    } else if (isDraw(this.props.squares)) {
-      status = "It 's a draw o(*^＠^*)o";
+      status = winner + ' win $$$';
+    } else if (isFull(this.props.squares)) {
+      status += ' (board is full, auto refresded ↺)';
     }
 
     return (
       <Container className="m-5">
-        <h2 className="status m-2">{status}</h2>
+        <h2 className="status">{status}</h2>
         <Row className="m-0">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
@@ -72,14 +82,36 @@ class Game extends Component {
         Array(9).fill(null)
       ],
       stepNumber: 0,
-      isXTurn: true
+      isXTurn: true,
+      showPopUp: false
     }
+
+    setInterval(() => {
+      const history = this.state.history.slice(0, this.state.stepNumber + 1);
+      const current = history[history.length - 1];
+
+      if (calculateWinner(current)) {
+        this.setState({ showPopUp: true });
+        return;
+      }
+
+      if (isFull(current)) {
+        const newBoard = current.slice();
+        const step = history.length;
+        newBoard.fill(null);
+        history.push(newBoard);
+        
+        this.setState({ history: history });
+        this.jumpTo(step);
+      }
+    }, 1000);
   }
 
   jumpTo = (step) => {
     this.setState({
       stepNumber: step,
-      isXTurn: (step % 2) === 0
+      isXTurn: (step % 2) === 0,
+      showPopUp: false
     })
   }
 
@@ -89,19 +121,16 @@ class Game extends Component {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const newBoard = current.slice();
-    
-    if (current[index] || calculateWinner(current) || isDraw(current)) {
-      return;
-    }
+
+    if (current[index] || calculateWinner(current) || isFull(current)) { return; }
     newBoard[index] = this.state.isXTurn ? 'X' : 'O';
+
     history.push(newBoard);
     
     this.setState({
       history: history,
       stepNumber: history.length - 1,
       isXTurn: !this.state.isXTurn
-    }, () => {
-      console.log('hnadle click', history, current, this.state.stepNumber);
     });
   }
 
@@ -132,17 +161,32 @@ class Game extends Component {
           <Col sm={8} className="bg-primary m-1 p-auto h-100 borRad">
             <Board squares={current} player={currentPlayer} onClick={(i) => this.handleClick(i)} />
           </Col>
-          <Col sm={3} className="bg-secondary m-1 p-auto h-100 borRad">
+          <Col sm={3} className="bg-secondary m-1 p-3 h-100 borRad">
             <h3> Traverse between moves: </h3>
             <ol>{moves}</ol>
           </Col>
         </Row>
+        {this.state.showPopUp
+          ? <PopUpMenu 
+            winner={this.state.isXTurn ? 'O' : 'X'} 
+            onClick={()=>{
+              this.setState({
+                history: [Array(9).fill(null)],
+                stepNumber: 0,
+                isXTurn: true,
+                showPopUp: false
+              })
+            }
+            }>
+          </PopUpMenu>  
+          : null
+        }
       </Container>
     );
   }
 }
 
-function isDraw(squares) {
+function isFull(squares) {
   for (let index = 0; index < squares.length; index++) {
     if (squares[index] === null) {
       return false;
