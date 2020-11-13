@@ -48,7 +48,7 @@ class Board extends Component {
     if (winner != null) {
       status = winner + ' win $$$';
     } else if (isFull(this.props.squares)) {
-      status += ' (board is full, auto refresded ↺)';
+      status = 'Full! Moves will be cleared';
     }
 
     return (
@@ -85,17 +85,38 @@ class Game extends Component {
       isXTurn: true,
       showPopUp: false
     }
+  }
 
-    setInterval(() => {
-      const history = this.state.history.slice(0, this.state.stepNumber + 1);
-      const current = history[history.length - 1];
+  // Change game state
+  jumpTo = (step) => {
+    this.setState({
+      stepNumber: step,
+      isXTurn: (step % 2) === 0,
+      showPopUp: false
+    })
+  }
 
-      if (calculateWinner(current)) {
+  // Handle change when a square is clicked
+  handleClick = (index) => {
+    // .slice() method create a copy of array this.state.square instead
+    // of modifying the exsisting array
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);
+    const current = history[history.length - 1];
+    const newBoard = current.slice();
+    let playerTurn = this.state.isXTurn;
+
+    // If a winner is detected, show pop up menu after 1.5s
+    if (calculateWinner(current)) {
+      setTimeout(() => {
         this.setState({ showPopUp: true });
-        return;
-      }
+      }, 500);
 
-      if (isFull(current)) {
+      return;
+    }
+
+    // If the board is full, create a new state of empty squares
+    if (isFull(current)) {
+      setTimeout(() => {
         const newBoard = current.slice();
         newBoard.fill(null);
         history.push(newBoard);
@@ -105,31 +126,20 @@ class Game extends Component {
           stepNumber: history.length - 1,
           showPopUp: false
         });
-      }
-    }, 1000);
-  }
+      }, 700);
 
-  jumpTo = (step) => {
-    this.setState({
-      stepNumber: step,
-      isXTurn: (step % 2) === 0,
-      showPopUp: false
-    })
-  }
+      return;
+    }
 
-  handleClick = (index) => {
-    // .slice() method create a copy of array this.state.square instead
-    // of modifying the exsisting array
-    const history = this.state.history.slice(0, this.state.stepNumber + 1);
-    const current = history[history.length - 1];
-    const newBoard = current.slice();
-    let playerTurn = this.state.isXTurn;
+    // Preven player from clicking an occupied square
+    if (current[index]) { return; }
 
-    if (current[index] || calculateWinner(current) || isFull(current)) { return; }
+    // If no winner detected or full board, 
+    // new state of the game will be pushed to the history
     newBoard[index] = this.state.isXTurn ? 'X' : 'O';
-
     history.push(newBoard);
     
+    // Update game state
     this.setState({
       history: history,
       stepNumber: history.length - 1,
@@ -138,19 +148,12 @@ class Game extends Component {
   }
 
   render() {
-    // update game status
+    // Update game status
     const history = this.state.history;
     const current = history[this.state.stepNumber];
-    console.log(history, this.state.stepNumber);
-
     const currentPlayer = this.state.isXTurn ? 'X' : 'O';
-    // let status = 'Next player: ' + currentPlayer;
-    //const winner = calculateWinner(current); 
-    // if(winner != null) {
-    //   status = winner + ' win （￣︶￣）↗　';
-    // }
 
-    // show history
+    // Display a list of moves from which players can click to restore game a disired state
     const moves = history.map((step, move) => {
       const desc = move ? 'Go to move #' + move : 'Restart game ↺';
       return (
@@ -171,17 +174,16 @@ class Game extends Component {
         </Row>
         {this.state.showPopUp
           ? <PopUpMenu 
-            winner={this.state.isXTurn ? 'O' : 'X'} 
-            onClick={() => {
-              this.setState({
-                history: [Array(9).fill(null)],
-                stepNumber: 0,
-                isXTurn: true,
-                showPopUp: false
-              })
-            }
-            }>
-          </PopUpMenu>  
+              winner={this.state.isXTurn ? 'O' : 'X'} 
+              onClick={() => {
+                this.setState({
+                  history: [Array(9).fill(null)],
+                  stepNumber: 0,
+                  isXTurn: true,
+                  showPopUp: false
+                })
+              }
+            }></PopUpMenu>  
           : null
         }
       </Container>
@@ -189,6 +191,7 @@ class Game extends Component {
   }
 }
 
+// Check is all squares have been occupied
 function isFull(squares) {
   for (let index = 0; index < squares.length; index++) {
     if (squares[index] === null) {
@@ -198,7 +201,9 @@ function isFull(squares) {
   return true;
 }
 
+// Check if a player has won
 function calculateWinner(squares) {
+  // A list possible winning state
   const winningLines = [
     [0, 1, 2],
     [3, 4, 5],
@@ -210,6 +215,7 @@ function calculateWinner(squares) {
     [2, 4, 6]
   ]
 
+  // Loop through all of the above winning state
   for (let index = 0; index < winningLines.length; index++) {
     let [a, b, c] = winningLines[index];
     if (squares[a] && squares[a] === squares[b] && squares[b] === squares[c]) {
