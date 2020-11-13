@@ -39,8 +39,8 @@ ol, ul {
   background: rgb(156, 224, 110);
 }
 
-.kbd-navigation .square:focus {
-  background: #ddd;
+.square:focus {
+  outline: none;
 }
 
 .game {

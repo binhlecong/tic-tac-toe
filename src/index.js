@@ -97,12 +97,14 @@ class Game extends Component {
 
       if (isFull(current)) {
         const newBoard = current.slice();
-        const step = history.length;
         newBoard.fill(null);
         history.push(newBoard);
         
-        this.setState({ history: history });
-        this.jumpTo(step);
+        this.setState({
+          history: history,
+          stepNumber: history.length - 1,
+          showPopUp: false
+        });
       }
     }, 1000);
   }
@@ -121,6 +123,7 @@ class Game extends Component {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const newBoard = current.slice();
+    let playerTurn = this.state.isXTurn;
 
     if (current[index] || calculateWinner(current) || isFull(current)) { return; }
     newBoard[index] = this.state.isXTurn ? 'X' : 'O';
@@ -130,7 +133,7 @@ class Game extends Component {
     this.setState({
       history: history,
       stepNumber: history.length - 1,
-      isXTurn: !this.state.isXTurn
+      isXTurn: !playerTurn
     });
   }
 
@@ -169,7 +172,7 @@ class Game extends Component {
         {this.state.showPopUp
           ? <PopUpMenu 
             winner={this.state.isXTurn ? 'O' : 'X'} 
-            onClick={()=>{
+            onClick={() => {
               this.setState({
                 history: [Array(9).fill(null)],
                 stepNumber: 0,
